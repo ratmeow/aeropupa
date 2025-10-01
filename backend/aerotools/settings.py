@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 from pydantic import BaseModel, Field
 
-BASE_GITHUB_URL = "https://github.com/ratmeow/aerotools/releases/download/submission/"
+BASE_GITHUB_URL = "https://github.com/ratmeow/aerofeatures/releases/download/submission/"
 BASE_PATH = "./models/"
 
 class ModelSpec(BaseModel):
@@ -10,8 +10,8 @@ class ModelSpec(BaseModel):
     sha256: str | None = None
 
 
-default_model = ModelSpec(path=BASE_PATH + "small-08.pt",
-                          url=BASE_GITHUB_URL + "small-08.pt",
+default_model = ModelSpec(path=BASE_PATH + "best.pt",
+                          url=BASE_GITHUB_URL + "best.pt",
                           sha256="d4690ae05bf4f1dd1a7f958acc83bf418fbe6c2db66965bfff2b82147d3d5548")
 
 small_model = ModelSpec(path=BASE_PATH + "small.pt",
