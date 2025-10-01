@@ -1,0 +1,27 @@
+services:
+  backend:
+    container_name: aero-fastapi
+    build:
+      context: ./backend
+      args:
+        TORCH_BACKEND: "cu126"
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    volumes:
+      - ./backend/aerotools:/src/aerotools:z
+      - ./backend/toolsets:/src/toolsets:z
+
+  frontend:
+    container_name: aero-react
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

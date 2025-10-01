@@ -1,0 +1,13 @@
+.git
+**/__pycache__/
+*.pyc
+.env
+models/
+datasets/
+tmp/
+dist/
+build/
+*.ipynb_checkpoints
+node_modules
+dist
+.gitignore
