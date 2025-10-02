@@ -1,5 +1,4 @@
 import React from "react";
-// если у тебя Dropdown лежит рядом, можно: import Dropdown from "../ui/Dropdown";
 import Dropdown from "../ui/Dropdown";
 
 interface Option { value: string; label: string }
@@ -14,8 +13,6 @@ interface Props {
   models: Option[];
   chosenModel: string;
   setChosenModel: (v: string) => void;
-  threshhold: number;
-  setThreshhold: (v: number) => void;
 }
 
 const ControlsBar: React.FC<Props> = ({
@@ -28,8 +25,6 @@ const ControlsBar: React.FC<Props> = ({
   models,
   chosenModel,
   setChosenModel,
-  threshhold,
-  setThreshhold,
 }) => {
   return (
     <div className="flex items-end justify-between gap-8">
@@ -52,21 +47,6 @@ const ControlsBar: React.FC<Props> = ({
           placeholder="Выберите модель"
           className="mt-2 w-full"
         />
-      </div>
-
-      <div className="flex-1 flex flex-col">
-        Threshhold:
-        <div>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            step={1}
-            value={threshhold}
-            onChange={(e) => setThreshhold(Number(e.target.value))}
-            className="w-[68px] h-[34px] bg-black/20 border border-at-darkgray rounded px-2 outline-none"
-          />%
-        </div>
       </div>
 
       <button

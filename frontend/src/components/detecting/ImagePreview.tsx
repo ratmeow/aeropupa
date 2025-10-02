@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { Detection } from "../../types/detecting";
+import { type Detection } from "../../types/detecting";
 
 interface Props {
   file: File | null;
@@ -8,26 +8,8 @@ interface Props {
   onPickFile: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
-}
 
-/** Палитра для классов (можно расширить) */
-const PALETTE = [
-  "#e6194b", // ярко-красный
-  "#3cb44b", // насыщенный зелёный
-  "#ffe119", // чисто-жёлтый
-  "#4363d8", // синий
-  "#f58231", // оранжевый
-  "#911eb4", // фиолетовый
-  "#46f0f0", // циан
-  "#f032e6", // розовый/маджента
-  "#bcf60c", // салатовый
-  "#fabebe", // светло-розовый
-  "#008080", // тёмный бирюзовый
-];
-
-/** Стабильный выбор цвета по ключу (class_id -> class_name -> индекс) */
-function colorFor(det: Detection) {
-  return PALETTE[det.class_id % PALETTE.length];
+  palette: string[];
 }
 
 const ImagePreview: React.FC<Props> = ({
@@ -37,9 +19,13 @@ const ImagePreview: React.FC<Props> = ({
   onPickFile,
   onFileChange,
   inputRef,
+  palette,  
 }) => {
   const [showBBoxes, setShowBBoxes] = useState(true);
   const [showPolygons, setShowPolygons] = useState(true);
+  const [showText, setShowText] = useState(true);
+
+  const colorFor = (id: number) => palette[id % palette.length];
 
   return (
     <div className="flex-1 flex flex-col">
@@ -58,29 +44,6 @@ const ImagePreview: React.FC<Props> = ({
             </span>
           )}
         </div>
-        <div>
-          {/* Переключатель отображения bbox */}
-          <label className="ml-auto flex items-center gap-2 select-none cursor-pointer">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-at-lightviolet"
-              checked={showBBoxes}
-              onChange={(e) => setShowBBoxes(e.target.checked)}
-            />
-            <span className="text-sm text-gray-200">Показывать bbox</span>
-          </label>
-          
-          {/* Переключатель отображения полигонов */}
-          <label className="ml-auto flex items-center gap-2 select-none cursor-pointer">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-at-lightviolet"
-              checked={showPolygons}
-              onChange={(e) => setShowPolygons(e.target.checked)}
-            />
-            <span className="text-sm text-gray-200">Показывать Полигоны</span>
-          </label>
-        </div>
       </div>
 
       <input
@@ -91,7 +54,42 @@ const ImagePreview: React.FC<Props> = ({
         onChange={onFileChange}
       />
 
-      <div className="relative w-full min-h-[480px] rounded-[10px] border-2 border-gray-300 flex items-center justify-center overflow-hidden bg-transparent">
+    <div className="flex gap-4 mb-3">
+        {/* Переключатель отображения bbox */}
+        <label className="flex items-center gap-2 select-none cursor-pointer">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-at-lightviolet"
+            checked={showBBoxes}
+            onChange={(e) => setShowBBoxes(e.target.checked)}
+          />
+          <span className="text-sm text-gray-200">Показывать bbox</span>
+        </label>
+        
+        {/* Переключатель отображения полигонов */}
+        <label className="flex items-center gap-2 select-none cursor-pointer">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-at-lightviolet"
+            checked={showPolygons}
+            onChange={(e) => setShowPolygons(e.target.checked)}
+          />
+          <span className="text-sm text-gray-200">Показывать полигоны</span>
+        </label>
+
+        {/* Переключатель отображения текста */}
+        <label className="flex items-center gap-2 select-none cursor-pointer">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-at-lightviolet"
+            checked={showText}
+            onChange={(e) => setShowText(e.target.checked)}
+          />
+          <span className="text-sm text-gray-200">Показывать текст</span>
+        </label>
+      </div>
+
+      <div className={`relative w-full ${ previewUrl ? '' : 'min-h-[480px]' } rounded-[10px] border-2 border-gray-300 flex items-center justify-center overflow-hidden bg-transparent`}>
         {previewUrl ? (
           <>
             <img src={previewUrl} alt="preview" className="w-full h-full object-contain" />
@@ -104,7 +102,7 @@ const ImagePreview: React.FC<Props> = ({
             >
               {detections.map((det, i) => {
                 const [x1, y1, x2, y2] = det.bbox;
-                const color = colorFor(det); // цвет для подписи и полигонов
+                const color = colorFor(det.class_id); // цвет для подписи и полигонов
 
                 return (
                   <g key={i}>
@@ -115,7 +113,7 @@ const ImagePreview: React.FC<Props> = ({
                         y={y1}
                         width={x2 - x1}
                         height={y2 - y1}
-                        stroke="lime"
+                        stroke={color}
                         strokeWidth={0.002}
                         fill="transparent"
                       />
@@ -133,17 +131,19 @@ const ImagePreview: React.FC<Props> = ({
                     ))}
 
                     {/* подпись — тот же индивидуальный цвет; с обводкой для читабельности */}
-                    <text
-                      x={x1}
-                      y={Math.max(0.03, y1 - 0.01)}
-                      fontSize={0.02}
-                      fill={color}
-                      stroke="black"
-                      strokeWidth={0.0012}
-                      paintOrder="stroke"
-                    >
-                      {det.class_name} {(det.confidence * 100).toFixed(1)}%
-                    </text>
+                    {showText && (
+                      <text
+                        x={x1}
+                        y={Math.max(0.03, y1 - 0.01)}
+                        fontSize={0.02}
+                        fill={color}
+                        stroke="black"
+                        strokeWidth={0.0012}
+                        paintOrder="stroke"
+                      >
+                        {det.class_name} {(det.confidence * 100).toFixed(1)}%
+                      </text>
+                    )}
                   </g>
                 );
               })}

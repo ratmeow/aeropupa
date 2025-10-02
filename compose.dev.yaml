@@ -17,6 +17,7 @@ services:
     volumes:
       - ./backend/aerotools:/src/aerotools:z
       - ./backend/toolsets:/src/toolsets:z
+      - ./backend/models:/src/models:z
 
   frontend:
     container_name: aero-react
